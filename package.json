@@ -1,0 +1,23 @@
+{
+  "name": "estomania",
+  "version": "1.0.0",
+  "description": "CIV 7 in the browser??",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.8",
+    "@types/socket.io": "^3.0.2",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0",
+    "socket.io": "^4.7.5",
+    "three": "^0.164.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
