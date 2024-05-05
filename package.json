@@ -1,0 +1,31 @@
+{
+  "name": "estomania",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack serve --mode development --open"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^4.7.5",
+    "three": "^0.164.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.8",
+    "@types/socket.io": "^3.0.2",
+    "@types/three": "^0.164.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.1",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  }
+}
