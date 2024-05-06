@@ -6,26 +6,30 @@ const socket = io("http://localhost:3000");
 
 socket.on("mapData", function (grid) {
     console.log("Received map data", grid);
-    createHexGrid(grid);
+    createHexGridMap(grid);
 });
 
-function createHexGrid(grid) {
-
-    const geometry = new THREE.CylinderGeometry(1, 1, 0.2, 6);
-    const material = new THREE.MeshBasicMaterial({
+function createHexGridMap(grid: { position: { x: number; z: number } }[][]) {
+    const hexGridGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 6);
+    const hexGridMaterial = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
-        wireframe: true,
+        wireframe: false,
     });
 
-    grid.forEach((row) => {
-        row.forEach((hex) => {
+    grid.forEach((row: { position: { x: number; z: number } }[]) => {
+        row.forEach((hex: { position: { x: number; z: number } }) => {
             if (hex) {
-                const hexMesh = new THREE.Mesh(geometry, material);
-                hexMesh.rotation.x = Math.PI / 2;
+                const hexMesh = new THREE.Mesh(
+                    hexGridGeometry,
+                    hexGridMaterial
+                );
+                hexMesh.rotation.y = Math.PI / 2;
+                const zOffsetPointy =
+                    hex.position.x % 2 === 0 ? Math.sqrt(3) / 2 : 0;
                 hexMesh.position.set(
-                    hex.x * 1.5 + (hex.z % 2) * 0.75,
+                    hex.position.x * 1.5,
                     0,
-                    hex.z * Math.sqrt(21)
+                    hex.position.z * Math.sqrt(3) + zOffsetPointy
                 );
                 scene.add(hexMesh);
             }
@@ -50,6 +54,27 @@ camera.lookAt(0, 0, 0);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0);
 controls.update();
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseMove(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+function onMouseClick(event) {
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    if (intersects.length > 0) {
+        const object = intersects[0].object;
+        console.log("Clicked on:", intersects[0].object);
+        scene.remove(object);
+    }
+}
+
+window.addEventListener("mousemove", onMouseMove, false);
+window.addEventListener("click", onMouseClick, false);
 
 function animate() {
     requestAnimationFrame(animate);
