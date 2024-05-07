@@ -15,8 +15,6 @@ export class Game {
         this._setupCamera();
         this._setupControls();
         this._setupEventListeners();
-
-        this.animate();
     }
 
     createHexGridMap(grid: { position: { x: number; z: number } }[][]) {
@@ -47,12 +45,6 @@ export class Game {
         });
     }
 
-    animate() {
-        requestAnimationFrame(this.animate);
-        this.controls.update();
-        this.renderer.render(this.scene, this.camera);
-    }
-
     _setupRenderer() {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -77,12 +69,12 @@ export class Game {
     }
 
     _setupControls() {
-        const controls = new OrbitControls(
+        this.controls = new OrbitControls(
             this.camera,
             this.renderer.domElement
         );
-        controls.target.set(0, 0, 0);
-        controls.update();
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
     }
 
     _setupEventListeners() {
@@ -102,7 +94,7 @@ export class Game {
 
         function onMouseClick(event) {
             that.raycaster.setFromCamera(that.mouse, that.camera);
-            const intersects = this.raycaster.intersectObjects(
+            const intersects = that.raycaster.intersectObjects(
                 that.scene.children,
                 true
             );
