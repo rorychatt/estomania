@@ -1,4 +1,4 @@
-import { init } from './shared-orbitcontrols';
+import { init } from './game';
 
 const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
@@ -64,6 +64,7 @@ const orbitKeys = {
     '39': true,  // right
     '40': true,  // down
 };
+
 function filteredKeydownEventHandler(event, sendFn) {
     const { keyCode } = event;
     if (orbitKeys[keyCode]) {
@@ -87,7 +88,6 @@ class ElementProxy {
             });
         };
 
-        // register an id
         worker.postMessage({
             type: 'makeProxy',
             id: this.id,

@@ -3,22 +3,62 @@ import { OrbitControls } from './OrbitControls';
 
 // Credit to https://threejsfundamentals.org/threejs/threejs-offscreencanvas-w-orbitcontrols.html
 
+export class Game {
+    
+    constructor() {
+
+    }
+}
+
+export class Camera {
+
+    cameraObject: THREE.PerspectiveCamera = new THREE.PerspectiveCamera;
+    controls?: OrbitControls;
+
+    constructor(cameraSettings: CameraSettings) {
+        this.cameraObject.fov = cameraSettings.fov;
+        this.cameraObject.aspect = cameraSettings.aspect;
+        this.cameraObject.near = cameraSettings.near;
+        this.cameraObject.far = cameraSettings.far;
+        this.cameraObject.position.copy(cameraSettings.position);
+    }
+
+    setControls(inputElement: Element) {
+        this.controls = new OrbitControls(this.cameraObject, inputElement)
+        this.controls.target.set(0, 0, 0);
+        this.controls.update()
+    }
+
+    setPosition(newPos: THREE.Vector3) {
+        this.cameraObject.position.copy(newPos)
+        if (this.controls) {
+            this.controls.update()
+        }
+    }
+
+}
+
+export type CameraSettings = {
+    fov: number;
+    aspect: number;
+    near: 0.1;
+    far: 100;
+    position: THREE.Vector3
+}
+
 export function init(data) {   /* eslint-disable-line no-unused-vars */
     const { canvas, inputElement } = data;
     const renderer = new THREE.WebGLRenderer({ canvas });
 
-    const fov = 75;
-    const aspect = 2; // the canvas default
-    const near = 0.1;
-    const far = 100;
-    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.z = 4;
+    const camera = new Camera({
+        fov: 75,
+        aspect: 2,
+        near: 0.1,
+        far: 100,
+        position: new THREE.Vector3(0, 0, 4)
+    })
 
     console.log(inputElement)
-
-    const controls = new OrbitControls(camera, inputElement);
-    controls.target.set(0, 0, 0);
-    controls.update();
 
     const scene = new THREE.Scene();
 
@@ -104,8 +144,8 @@ export function init(data) {   /* eslint-disable-line no-unused-vars */
         time *= 0.001;
 
         if (resizeRendererToDisplaySize(renderer)) {
-            camera.aspect = inputElement.clientWidth / inputElement.clientHeight;
-            camera.updateProjectionMatrix();
+            camera.cameraObject.aspect = inputElement.clientWidth / inputElement.clientHeight;
+            camera.cameraObject.updateProjectionMatrix();
         }
 
         cubes.forEach((cube, ndx) => {
@@ -117,7 +157,7 @@ export function init(data) {   /* eslint-disable-line no-unused-vars */
 
         pickHelper.pick(pickPosition, scene, camera, time);
 
-        renderer.render(scene, camera);
+        renderer.render(scene, camera.cameraObject);
 
         requestAnimationFrame(render);
     }

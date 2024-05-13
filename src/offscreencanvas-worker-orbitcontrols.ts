@@ -1,5 +1,5 @@
 import { EventDispatcher } from 'three/src/core/EventDispatcher.js';
-import { init } from './shared-orbitcontrols';
+import { init } from './game';
 
 function noop() {
 }
