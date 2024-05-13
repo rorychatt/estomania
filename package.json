@@ -1,11 +1,11 @@
 {
   "name": "estomania",
-  "version": "1.0.0",
+  "version": "1.0.2.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
-    "start": "webpack serve --mode development --open"
+    "start": "npm run build && webpack serve --mode development --open"
   },
   "keywords": [],
   "author": "",
