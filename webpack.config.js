@@ -7,6 +7,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.worker\.ts$/,
+        use: { loader: 'worker-loader' }
+      },
+      {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
@@ -26,7 +30,7 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: 'public/style.css', to: 'style.css' } // Copy style.css from public to dist
+        { from: 'public/style.css', to: 'style.css' }
       ],
     })
   ],
