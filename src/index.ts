@@ -166,9 +166,16 @@ main();
 
 const socket = io('http://localhost:3000')
 
-socket.on('mapData', mapData => {
+socket.on('gameData', gameData => {
     worker.postMessage({
-        type: 'mapData',
-        data: mapData
+        type: 'gameData',
+        data: gameData
+    })
+})
+
+document.addEventListener('click', (e) => {
+    e.preventDefault();
+    worker.postMessage({
+        type: 'raycastFromCamera'
     })
 })

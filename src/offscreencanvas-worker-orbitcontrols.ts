@@ -92,7 +92,8 @@ const handlers = {
     start,
     makeProxy,
     event: proxyManager.handleEvent,
-    mapData: loadMapData
+    gameData: loadGameData,
+    raycastFromCamera
 };
 
 self.onmessage = function (e) {
@@ -103,6 +104,10 @@ self.onmessage = function (e) {
     fn(e.data);
 };
 
-function loadMapData(data) {
-    game.loadMapData(data)
+function loadGameData(data) {
+    game.loadGameData(data.data)
+}
+
+function raycastFromCamera(){
+    game.raycastFromCamera()
 }
