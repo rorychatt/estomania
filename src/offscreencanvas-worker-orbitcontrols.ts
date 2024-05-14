@@ -1,5 +1,5 @@
 import { EventDispatcher } from 'three/src/core/EventDispatcher.js';
-import { init } from './game';
+import { game, init } from './game';
 
 function noop() {
 }
@@ -92,6 +92,8 @@ const handlers = {
     start,
     makeProxy,
     event: proxyManager.handleEvent,
+    gameData: loadGameData,
+    raycastFromCamera
 };
 
 self.onmessage = function (e) {
@@ -101,3 +103,11 @@ self.onmessage = function (e) {
     }
     fn(e.data);
 };
+
+function loadGameData(data) {
+    game.loadGameData(data.data)
+}
+
+function raycastFromCamera(){
+    game.raycastFromCamera()
+}

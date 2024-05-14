@@ -1,13 +1,114 @@
 import * as THREE from 'three';
 import { OrbitControls } from './OrbitControls';
 
-// Credit to https://threejsfundamentals.org/threejs/threejs-offscreencanvas-w-orbitcontrols.html
+export let game: Game;
 
 export class Game {
-    
-    constructor() {
+
+    camera: Camera;
+    renderer: THREE.Renderer;
+    scene: THREE.Scene;
+    pickHelper: PickHelper;
+    inputElement: Element;
+    hexGridMap: { position: { x: number; z: number; }; }[][]
+
+    constructor(canvas: HTMLCanvasElement, inputElement: Element, cameraSettings: CameraSettings) {
+
+        this.renderer = new THREE.WebGLRenderer({ canvas })
+        this.camera = new Camera(cameraSettings, inputElement)
+        this.scene = new THREE.Scene();
+        this.pickHelper = new PickHelper(inputElement)
+        this.inputElement = inputElement
+
+        this.setupGlobalLights();
+
+        const that = this
+
+        function render() {
+            if (that.resizeRendererToDisplaySize()) {
+                that.camera.updateProjectionMatrix(that.inputElement.clientWidth, that.inputElement.clientHeight);
+            }
+
+            that.pickHelper.pick(that.scene, that.camera.cameraObject)
+            that.renderer.render(that.scene, that.camera.cameraObject)
+            requestAnimationFrame(render)
+        }
+
+        requestAnimationFrame(render)
 
     }
+
+    raycastFromCamera() {
+        this.pickObject();
+    }
+
+    loadGameData(data) {
+        console.log(data)
+        this.hexGridMap = data.hexGridMap.grid;
+        this.createMap()
+    }
+
+    createMap() {
+        const hexGridGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 6);
+        const hexGridMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            wireframe: false,
+        });
+
+        this.hexGridMap.forEach((row: { position: { x: number; z: number } }[]) => {
+            row.forEach((hex: { position: { x: number; z: number } }) => {
+                if (hex) {
+                    const hexMesh = new THREE.Mesh(
+                        hexGridGeometry,
+                        hexGridMaterial
+                    );
+                    hexMesh.rotation.y = Math.PI / 2;
+                    const zOffsetPointy =
+                        hex.position.x % 2 === 0 ? Math.sqrt(3) / 2 : 0;
+                    hexMesh.position.set(
+                        hex.position.x * 1.5,
+                        0,
+                        hex.position.z * Math.sqrt(3) + zOffsetPointy
+                    );
+                    this.addObject(hexMesh)
+                }
+            });
+        });
+
+    }
+
+    pickObject() {
+        this.pickHelper.pick(this.scene, this.camera.cameraObject);
+        this.removeObject(this.pickHelper.pickedObject);
+    }
+
+    addObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+        this.scene.add(object)
+    }
+
+    removeObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+        this.scene.remove(object)
+    }
+
+    setupGlobalLights() {
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new THREE.DirectionalLight(color, intensity);
+        light.position.set(-1, 2, 4);
+        this.addObject(light)
+    }
+
+    resizeRendererToDisplaySize() {
+        const canvas = this.renderer.domElement;
+        const width = this.inputElement.clientWidth;
+        const height = this.inputElement.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            this.renderer.setSize(width, height, false);
+        }
+        return needResize;
+    }
+
 }
 
 export class Camera {
@@ -15,12 +116,15 @@ export class Camera {
     cameraObject: THREE.PerspectiveCamera = new THREE.PerspectiveCamera;
     controls?: OrbitControls;
 
-    constructor(cameraSettings: CameraSettings) {
+    constructor(cameraSettings: CameraSettings, inputElement?: Element) {
         this.cameraObject.fov = cameraSettings.fov;
         this.cameraObject.aspect = cameraSettings.aspect;
         this.cameraObject.near = cameraSettings.near;
         this.cameraObject.far = cameraSettings.far;
         this.cameraObject.position.copy(cameraSettings.position);
+        if (inputElement) {
+            this.setControls(inputElement)
+        }
     }
 
     setControls(inputElement: Element) {
@@ -36,6 +140,79 @@ export class Camera {
         }
     }
 
+    updateProjectionMatrix(clientWidth: number, clientHeight: number) {
+        this.cameraObject.aspect = clientWidth / clientHeight;
+        this.cameraObject.updateProjectionMatrix();
+    }
+
+}
+
+export class PickHelper {
+
+    raycaster: THREE.Raycaster;
+    pickedObject: THREE.Object3D<THREE.Object3DEventMap> | null;
+    inputElement: Element
+    pickPosition = { x: 0, y: 0 }
+
+    constructor(inputElement: Element) {
+        this.raycaster = new THREE.Raycaster()
+        this.pickedObject = null;
+        this.inputElement = inputElement
+        this.clearPickPosition = this.clearPickPosition.bind(this)
+        this.setPickPosition = this.setPickPosition.bind(this)
+
+        this.clearPickPosition()
+        this.addEventListeners()
+    }
+
+    addEventListeners() {
+        this.inputElement.addEventListener('mousemove', this.setPickPosition);
+        this.inputElement.addEventListener('mouseout', this.clearPickPosition);
+        this.inputElement.addEventListener('mouseleave', this.clearPickPosition);
+
+        this.inputElement.addEventListener('touchstart', (event: any) => {
+            event.preventDefault();
+            this.setPickPosition(event.touches[0]);
+        }, { passive: false });
+
+        this.inputElement.addEventListener('touchmove', (event: any) => {
+            this.setPickPosition(event.touches[0]);
+        });
+
+        this.inputElement.addEventListener('touchend', this.clearPickPosition);
+
+    }
+
+    pick(scene: THREE.Scene, camera: THREE.Camera) {
+        if (this.pickedObject) {
+            this.pickedObject = null;
+        }
+        this.raycaster.setFromCamera(new THREE.Vector2(this.pickPosition.x, this.pickPosition.y), camera);
+        const intersectedObjects = this.raycaster.intersectObjects(scene.children)
+        if (intersectedObjects.length) {
+            this.pickedObject = intersectedObjects[0].object
+        }
+    }
+
+    getCanvasRelativePosition(event: any) {
+        const rect = this.inputElement.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+        };
+    }
+
+    setPickPosition(event: any) {
+        const pos = this.getCanvasRelativePosition(event);
+        this.pickPosition.x = (pos.x / this.inputElement.clientWidth) * 2 - 1;
+        this.pickPosition.y = (pos.y / this.inputElement.clientHeight) * -2 + 1;
+    }
+
+    clearPickPosition() {
+        this.pickPosition.x = -100000;
+        this.pickPosition.y = -100000;
+    }
+
 }
 
 export type CameraSettings = {
@@ -46,272 +223,16 @@ export type CameraSettings = {
     position: THREE.Vector3
 }
 
-export function init(data) {   /* eslint-disable-line no-unused-vars */
+export function init(data) {
     const { canvas, inputElement } = data;
-    const renderer = new THREE.WebGLRenderer({ canvas });
 
-    const camera = new Camera({
+    const cameraSettings: CameraSettings = {
         fov: 75,
         aspect: 2,
         near: 0.1,
         far: 100,
-        position: new THREE.Vector3(0, 0, 4)
-    })
-
-    console.log(inputElement)
-
-    const scene = new THREE.Scene();
-
-    {
-        const color = 0xFFFFFF;
-        const intensity = 1;
-        const light = new THREE.DirectionalLight(color, intensity);
-        light.position.set(-1, 2, 4);
-        scene.add(light);
+        position: new THREE.Vector3(3, 4, 5)
     }
 
-    const boxWidth = 1;
-    const boxHeight = 1;
-    const boxDepth = 1;
-    const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
-
-    function makeInstance(geometry, color, x) {
-        const material = new THREE.MeshPhongMaterial({
-            color,
-        });
-
-        const cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
-
-        cube.position.x = x;
-
-        return cube;
-    }
-
-    const cubes = [
-        makeInstance(geometry, 0x44aa88, 0),
-        makeInstance(geometry, 0x8844aa, -2),
-        makeInstance(geometry, 0xaa8844, 2),
-    ];
-
-    class PickHelper {
-        raycaster: any;
-        pickedObject: any;
-        pickedObjectSavedColor: any;
-        constructor() {
-            this.raycaster = new THREE.Raycaster();
-            this.pickedObject = null;
-            this.pickedObjectSavedColor = 0;
-        }
-        pick(normalizedPosition, scene, camera, time) {
-            // restore the color if there is a picked object
-            if (this.pickedObject) {
-                this.pickedObject.material.emissive.setHex(this.pickedObjectSavedColor);
-                this.pickedObject = undefined;
-            }
-
-            // cast a ray through the frustum
-            this.raycaster.setFromCamera(normalizedPosition, camera);
-            // get the list of objects the ray intersected
-            const intersectedObjects = this.raycaster.intersectObjects(scene.children);
-            if (intersectedObjects.length) {
-                // pick the first object. It's the closest one
-                this.pickedObject = intersectedObjects[0].object;
-                // save its color
-                this.pickedObjectSavedColor = this.pickedObject.material.emissive.getHex();
-                // set its emissive color to flashing red/yellow
-                this.pickedObject.material.emissive.setHex((time * 8) % 2 > 1 ? 0xFFFF00 : 0xFF0000);
-            }
-        }
-    }
-
-    const pickPosition = { x: -2, y: -2 };
-    const pickHelper = new PickHelper();
-    clearPickPosition();
-
-    function resizeRendererToDisplaySize(renderer) {
-        const canvas = renderer.domElement;
-        const width = inputElement.clientWidth;
-        const height = inputElement.clientHeight;
-        const needResize = canvas.width !== width || canvas.height !== height;
-        if (needResize) {
-            renderer.setSize(width, height, false);
-        }
-        return needResize;
-    }
-
-    function render(time) {
-        time *= 0.001;
-
-        if (resizeRendererToDisplaySize(renderer)) {
-            camera.cameraObject.aspect = inputElement.clientWidth / inputElement.clientHeight;
-            camera.cameraObject.updateProjectionMatrix();
-        }
-
-        cubes.forEach((cube, ndx) => {
-            const speed = 1 + ndx * .1;
-            const rot = time * speed;
-            cube.rotation.x = rot;
-            cube.rotation.y = rot;
-        });
-
-        pickHelper.pick(pickPosition, scene, camera, time);
-
-        renderer.render(scene, camera.cameraObject);
-
-        requestAnimationFrame(render);
-    }
-
-    requestAnimationFrame(render);
-
-    function getCanvasRelativePosition(event) {
-        const rect = inputElement.getBoundingClientRect();
-        return {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top,
-        };
-    }
-
-    function setPickPosition(event) {
-        const pos = getCanvasRelativePosition(event);
-        pickPosition.x = (pos.x / inputElement.clientWidth) * 2 - 1;
-        pickPosition.y = (pos.y / inputElement.clientHeight) * -2 + 1;  // note we flip Y
-    }
-
-    function clearPickPosition() {
-        // unlike the mouse which always has a position
-        // if the user stops touching the screen we want
-        // to stop picking. For now we just pick a value
-        // unlikely to pick something
-        pickPosition.x = -100000;
-        pickPosition.y = -100000;
-    }
-
-    inputElement.addEventListener('mousemove', setPickPosition);
-    inputElement.addEventListener('mouseout', clearPickPosition);
-    inputElement.addEventListener('mouseleave', clearPickPosition);
-
-    inputElement.addEventListener('touchstart', (event) => {
-        // prevent the window from scrolling
-        event.preventDefault();
-        setPickPosition(event.touches[0]);
-    }, { passive: false });
-
-    inputElement.addEventListener('touchmove', (event) => {
-        setPickPosition(event.touches[0]);
-    });
-
-    inputElement.addEventListener('touchend', clearPickPosition);
+    game = new Game(canvas, inputElement, cameraSettings)
 }
-
-// import * as THREE from "three";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-// export class Game {
-//     renderer: THREE.WebGLRenderer;
-//     scene: THREE.Scene;
-//     camera: THREE.PerspectiveCamera;
-//     controls: OrbitControls;
-//     raycaster: THREE.Raycaster;
-//     mouse: THREE.Vector2;
-
-//     constructor() {
-//         this._setupRenderer();
-//         this._setupScene();
-//         this._setupCamera();
-//         this._setupControls();
-//         this._setupEventListeners();
-//     }
-
-//     createHexGridMap(grid: { position: { x: number; z: number } }[][]) {
-//         const hexGridGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 6);
-//         const hexGridMaterial = new THREE.MeshBasicMaterial({
-//             color: 0x00ff00,
-//             wireframe: false,
-//         });
-
-//         grid.forEach((row: { position: { x: number; z: number } }[]) => {
-//             row.forEach((hex: { position: { x: number; z: number } }) => {
-//                 if (hex) {
-//                     const hexMesh = new THREE.Mesh(
-//                         hexGridGeometry,
-//                         hexGridMaterial
-//                     );
-//                     hexMesh.rotation.y = Math.PI / 2;
-//                     const zOffsetPointy =
-//                         hex.position.x % 2 === 0 ? Math.sqrt(3) / 2 : 0;
-//                     hexMesh.position.set(
-//                         hex.position.x * 1.5,
-//                         0,
-//                         hex.position.z * Math.sqrt(3) + zOffsetPointy
-//                     );
-//                     this.scene.add(hexMesh);
-//                 }
-//             });
-//         });
-//     }
-
-//     _setupRenderer() {
-//         this.renderer = new THREE.WebGLRenderer();
-//         this.renderer.setSize(window.innerWidth, window.innerHeight);
-//         document.body.appendChild(this.renderer.domElement);
-//     }
-
-//     _setupScene() {
-//         this.scene = new THREE.Scene();
-//     }
-
-//     _setupCamera() {
-//         this.camera = new THREE.PerspectiveCamera(
-//             75,
-//             window.innerWidth / window.innerHeight,
-//             0.1,
-//             1000
-//         );
-
-//         //Camera default position hard coding for future
-//         this.camera.position.set(0, 50, 100);
-//         this.camera.lookAt(0, 0, 0);
-//     }
-
-//     _setupControls() {
-//         this.controls = new OrbitControls(
-//             this.camera,
-//             this.renderer.domElement
-//         );
-//         this.controls.target.set(0, 0, 0);
-//         this.controls.update();
-//     }
-
-//     _setupEventListeners() {
-//         this._setupRaycaster();
-//     }
-
-//     _setupRaycaster() {
-//         this.raycaster = new THREE.Raycaster();
-//         this.mouse = new THREE.Vector2();
-
-//         const that = this;
-
-//         function onMouseMove(event) {
-//             that.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-//             that.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-//         }
-
-//         function onMouseClick(event) {
-//             that.raycaster.setFromCamera(that.mouse, that.camera);
-//             const intersects = that.raycaster.intersectObjects(
-//                 that.scene.children,
-//                 true
-//             );
-//             if (intersects.length > 0) {
-//                 const object = intersects[0].object;
-//                 console.log("Clicked on:", intersects[0].object);
-//                 that.scene.remove(object);
-//             }
-//         }
-
-//         window.addEventListener("mousemove", onMouseMove, false);
-//         window.addEventListener("click", onMouseClick, false);
-//     }
-// }

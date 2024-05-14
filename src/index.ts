@@ -1,4 +1,7 @@
+import { io } from 'socket.io-client';
 import { init } from './game';
+
+let worker;
 
 const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
@@ -119,7 +122,7 @@ class ElementProxy {
 function startWorker(canvas) {
     canvas.focus();
     const offscreen = canvas.transferControlToOffscreen();
-    const worker = new Worker(new URL('./offscreencanvas-worker-orbitcontrols.ts', import.meta.url), { type: 'module' });
+    worker = new Worker(new URL('./offscreencanvas-worker-orbitcontrols.ts', import.meta.url), { type: 'module' });
 
     const eventHandlers = {
         contextmenu: preventDefaultHandler,
@@ -145,8 +148,9 @@ function startWorker(canvas) {
 }
 
 function startMainPage(canvas) {
-    init({ canvas, inputElement: canvas });
+    // init({ canvas, inputElement: canvas });
     console.log('using regular canvas');  /* eslint-disable-line no-console */
+    alert("UNSUPPORTED_BROWSER error")
 }
 
 function main() {  /* eslint consistent-return: 0 */
@@ -159,3 +163,19 @@ function main() {  /* eslint consistent-return: 0 */
 }
 
 main();
+
+const socket = io('http://localhost:3000')
+
+socket.on('gameData', gameData => {
+    worker.postMessage({
+        type: 'gameData',
+        data: gameData
+    })
+})
+
+document.addEventListener('click', (e) => {
+    e.preventDefault();
+    worker.postMessage({
+        type: 'raycastFromCamera'
+    })
+})
