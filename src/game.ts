@@ -3,6 +3,8 @@ import { OrbitControls } from './OrbitControls';
 
 // Credit to https://threejsfundamentals.org/threejs/threejs-offscreencanvas-w-orbitcontrols.html
 
+export let game: Game;
+
 export class Game {
 
     camera: Camera;
@@ -45,7 +47,7 @@ export class Game {
             makeInstance(geometry, 0xaa8844, 2),
         ];
 
-
+        
         function render() {
             if (that.resizeRendererToDisplaySize()) {
                 that.camera.updateProjectionMatrix(that.inputElement.clientWidth, that.inputElement.clientHeight);
@@ -55,8 +57,13 @@ export class Game {
             that.renderer.render(that.scene, that.camera.cameraObject)
             requestAnimationFrame(render)
         }
+
         requestAnimationFrame(render)
 
+    }
+
+    loadMapData(data){
+        console.log(data)
     }
 
     addObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
@@ -207,7 +214,7 @@ export function init(data) {
         position: new THREE.Vector3(0, 0, 4)
     }
 
-    const game = new Game(canvas, inputElement, cameraSettings)
+    game = new Game(canvas, inputElement, cameraSettings)
 }
 
 // import * as THREE from "three";

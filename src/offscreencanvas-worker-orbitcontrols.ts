@@ -1,5 +1,5 @@
 import { EventDispatcher } from 'three/src/core/EventDispatcher.js';
-import { init } from './game';
+import { game, init } from './game';
 
 function noop() {
 }
@@ -92,6 +92,7 @@ const handlers = {
     start,
     makeProxy,
     event: proxyManager.handleEvent,
+    mapData: loadMapData
 };
 
 self.onmessage = function (e) {
@@ -101,3 +102,7 @@ self.onmessage = function (e) {
     }
     fn(e.data);
 };
+
+function loadMapData(data) {
+    game.loadMapData(data)
+}
