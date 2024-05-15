@@ -223,7 +223,7 @@ export type CameraSettings = {
     position: THREE.Vector3
 }
 
-export function init(data) {
+export function init(data: { canvas: any; inputElement: any; }) {
     const { canvas, inputElement } = data;
 
     const cameraSettings: CameraSettings = {

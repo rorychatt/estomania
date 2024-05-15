@@ -1,7 +1,8 @@
-import { io } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { init } from './game';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 
-let worker;
+let worker: Worker, gameUIManager: GameUIManager, socketManager: SocketManager
 
 const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
@@ -153,25 +154,60 @@ function startMainPage(canvas) {
     alert("UNSUPPORTED_BROWSER error")
 }
 
+class SocketManager {
+
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>
+
+    constructor(address: string) {
+        this.socket = io(address)
+        this._loadSocketListeners();
+    }
+
+    _loadSocketListeners() {
+        this.socket.on('gameData', gameData => {
+            worker.postMessage({
+                type: 'gameData',
+                data: gameData
+            })
+            gameUIManager.updateGameTurn(gameData.turn)
+        })
+    }
+}
+
+class GameUIManager {
+
+    turn: number;
+    turnCounterDiv: Element
+
+    constructor() {
+        this.turn = 0;
+    }
+
+    updateGameTurn(turnNo: number) {
+        this.turn = turnNo;
+
+        if (!this.turnCounterDiv) {
+            this.turnCounterDiv = document.querySelector('#turn_counter')
+        }
+
+        this.turnCounterDiv.innerHTML = `Turn ${turnNo}`
+    }
+}
+
 function main() {  /* eslint consistent-return: 0 */
     const canvas = document.querySelector('#c');
     if ((canvas as HTMLCanvasElement).transferControlToOffscreen) {
         startWorker(canvas);
     } else {
+        alert("UNSUPPORTED BROWSER")
         startMainPage(canvas);
     }
+
+    gameUIManager = new GameUIManager()
+    socketManager = new SocketManager('http://localhost:3000')
 }
 
 main();
-
-const socket = io('http://localhost:3000')
-
-socket.on('gameData', gameData => {
-    worker.postMessage({
-        type: 'gameData',
-        data: gameData
-    })
-})
 
 document.addEventListener('click', (e) => {
     e.preventDefault();
