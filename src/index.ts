@@ -1,6 +1,7 @@
 import { Socket, io } from 'socket.io-client';
 import { init } from './game';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { Game } from 'estomania-server/types/Game';
 
 let worker: Worker, gameUIManager: GameUIManager, socketManager: SocketManager
 
@@ -15,10 +16,12 @@ const mouseEventHandler = makeSendPropertiesHandler([
     'pageX',
     'pageY',
 ]);
+
 const wheelEventHandlerImpl = makeSendPropertiesHandler([
     'deltaX',
     'deltaY',
 ]);
+
 const keydownEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
     'metaKey',
@@ -78,6 +81,7 @@ function filteredKeydownEventHandler(event, sendFn) {
 }
 
 let nextProxyId = 0;
+
 class ElementProxy {
     id: number;
     worker: Worker;
@@ -164,12 +168,13 @@ class SocketManager {
     }
 
     _loadSocketListeners() {
-        this.socket.on('gameData', gameData => {
+        this.socket.on('gameData', (gameData: Game) => {
             worker.postMessage({
                 type: 'gameData',
                 data: gameData
             })
             gameUIManager.updateGameTurn(gameData.turn)
+            gameUIManager.setPlayerList(gameData.currentPlayers)
         })
     }
 }
@@ -177,7 +182,10 @@ class SocketManager {
 class GameUIManager {
 
     turn: number;
-    turnCounterDiv: Element
+    playerList: PlayerData[]
+
+    turnCounterContainer: HTMLElement;
+    playerInfoContainer: HTMLElement;
 
     constructor() {
         this.turn = 0;
@@ -186,11 +194,57 @@ class GameUIManager {
     updateGameTurn(turnNo: number) {
         this.turn = turnNo;
 
-        if (!this.turnCounterDiv) {
-            this.turnCounterDiv = document.querySelector('#turn_counter')
+        if (!this.turnCounterContainer) {
+            this.turnCounterContainer = document.querySelector('#turn_counter_container')
         }
 
-        this.turnCounterDiv.innerHTML = `Turn ${turnNo}`
+        this._updateGameTurnCounter()
+    }
+
+    setPlayerList(playerList: PlayerData[]) {
+
+        this.playerList = playerList
+
+        if (!this.playerInfoContainer) {
+            this.playerInfoContainer = document.querySelector('#all_players_info_container')
+        }
+
+        this._createPlayerInfoDivForAll()
+
+    }
+
+    _updateGameTurnCounter() {
+        if (!this.turnCounterContainer) return;
+        this.turnCounterContainer.innerHTML = `Turn ${this.turn}`
+    }
+
+    _createPlayerInfoDivForAll() {
+        if (!this.playerInfoContainer) return;
+        this.playerList.forEach(player => {
+            this._createPlayerInfoDiv(player)
+        });
+
+    }
+
+    _createPlayerInfoDiv(playerData: PlayerData) {
+
+        if (!this.playerInfoContainer) return;
+
+        const playerInfoDiv = document.createElement('div');
+        playerInfoDiv.className = 'player_info_container'
+
+        const playerNameDiv = document.createElement('div');
+        playerNameDiv.className = 'player_info_name'
+        playerNameDiv.innerHTML = playerData.uuid;
+
+        const playerDataDiv = document.createElement('div');
+        playerDataDiv.className = 'player_info_data'
+        playerDataDiv.innerHTML = playerData.socketId
+
+        playerInfoDiv.appendChild(playerNameDiv)
+        playerInfoDiv.appendChild(playerDataDiv)
+
+        this.playerInfoContainer.appendChild(playerInfoDiv)
     }
 }
 
@@ -215,3 +269,8 @@ document.addEventListener('click', (e) => {
         type: 'raycastFromCamera'
     })
 })
+
+type PlayerData = {
+    uuid: string;
+    socketId: string;
+}

@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "estomania-server": "1.0.4",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "three": "^0.164.1"

@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -14,9 +15,11 @@ canvas {
 
 .corner {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: rgba(255, 255, 255, 0.5); /* semi-transparent white */
+    min-width: 50px;
+    min-height: 50px;
+    background-color: rgba(255, 255, 255, 0.5);
+    /* semi-transparent white */
+    padding: 1px;
 }
 
 .top-left {
@@ -24,9 +27,11 @@ canvas {
     left: 0;
 }
 
-.top-right {
+#all_players_info_container {
     top: 0;
     right: 0;
+    display: flex;
+    flex-direction: row;
 }
 
 .bottom-left {
@@ -34,7 +39,13 @@ canvas {
     left: 0;
 }
 
-.bottom-right {
+#turn_counter_container {
     bottom: 0;
     right: 0;
+}
+
+.player_info_container {
+    max-width: 120px;
+    margin: 1px;
+    border: solid black 1px;
 }
