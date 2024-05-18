@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from './OrbitControls';
+import { HexGridMap } from 'estomania-server/types/HexGridMap'
 
 export let game: Game;
 
@@ -10,7 +11,7 @@ export class Game {
     scene: THREE.Scene;
     pickHelper: PickHelper;
     inputElement: Element;
-    hexGridMap: { position: { x: number; z: number; }; }[][]
+    hexGridMap: HexGridMap;
 
     constructor(canvas: HTMLCanvasElement, inputElement: Element, cameraSettings: CameraSettings) {
 
@@ -44,24 +45,36 @@ export class Game {
 
     loadGameData(data) {
         console.log(data)
-        this.hexGridMap = data.hexGridMap.grid;
+        this.hexGridMap = data.hexGridMap;
         this.createMap()
     }
 
     createMap() {
         const hexGridGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 6);
-        const hexGridMaterial = new THREE.MeshBasicMaterial({
+        const plainsGridMaterial = new THREE.MeshBasicMaterial({
             color: 0x00ff00,
             wireframe: false,
         });
+        const waterHexGridMaterial = new THREE.MeshBasicMaterial({
+            color: 0x0000ff,
+            wireframe: false,
+        });
 
-        this.hexGridMap.forEach((row: { position: { x: number; z: number } }[]) => {
-            row.forEach((hex: { position: { x: number; z: number } }) => {
+        this.hexGridMap.grid.forEach(hexRow => {
+            hexRow.forEach((hex) => {
                 if (hex) {
-                    const hexMesh = new THREE.Mesh(
-                        hexGridGeometry,
-                        hexGridMaterial
-                    );
+                    let hexMesh: THREE.Mesh
+                    switch (hex.tileType) {
+                        case "plains":
+                            hexMesh = new THREE.Mesh(hexGridGeometry, plainsGridMaterial)
+                            break;
+                        case "water":
+                            hexMesh = new THREE.Mesh(hexGridGeometry, waterHexGridMaterial)
+                            break;
+                        default:
+                            hexMesh = new THREE.Mesh(hexGridGeometry, plainsGridMaterial)
+
+                    }
                     hexMesh.rotation.y = Math.PI / 2;
                     const zOffsetPointy =
                         hex.position.x % 2 === 0 ? Math.sqrt(3) / 2 : 0;
@@ -223,7 +236,7 @@ export type CameraSettings = {
     position: THREE.Vector3
 }
 
-export function init(data) {
+export function init(data: { canvas: any; inputElement: any; }) {
     const { canvas, inputElement } = data;
 
     const cameraSettings: CameraSettings = {

@@ -1,7 +1,9 @@
-import { io } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { init } from './game';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { Game } from 'estomania-server/types/Game';
 
-let worker;
+let worker: Worker, gameUIManager: GameUIManager, socketManager: SocketManager
 
 const mouseEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
@@ -14,10 +16,12 @@ const mouseEventHandler = makeSendPropertiesHandler([
     'pageX',
     'pageY',
 ]);
+
 const wheelEventHandlerImpl = makeSendPropertiesHandler([
     'deltaX',
     'deltaY',
 ]);
+
 const keydownEventHandler = makeSendPropertiesHandler([
     'ctrlKey',
     'metaKey',
@@ -77,6 +81,7 @@ function filteredKeydownEventHandler(event, sendFn) {
 }
 
 let nextProxyId = 0;
+
 class ElementProxy {
     id: number;
     worker: Worker;
@@ -153,25 +158,110 @@ function startMainPage(canvas) {
     alert("UNSUPPORTED_BROWSER error")
 }
 
+class SocketManager {
+
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>
+
+    constructor(address: string) {
+        this.socket = io(address)
+        this._loadSocketListeners();
+    }
+
+    _loadSocketListeners() {
+        this.socket.on('gameData', (gameData: Game) => {
+            worker.postMessage({
+                type: 'gameData',
+                data: gameData
+            })
+            gameUIManager.updateGameTurn(gameData.turn)
+            gameUIManager.setPlayerList(gameData.currentPlayers)
+        })
+    }
+}
+
+class GameUIManager {
+
+    turn: number;
+    playerList: PlayerData[]
+
+    turnCounterContainer: HTMLElement;
+    playerInfoContainer: HTMLElement;
+
+    constructor() {
+        this.turn = 0;
+    }
+
+    updateGameTurn(turnNo: number) {
+        this.turn = turnNo;
+
+        if (!this.turnCounterContainer) {
+            this.turnCounterContainer = document.querySelector('#turn_counter_container')
+        }
+
+        this._updateGameTurnCounter()
+    }
+
+    setPlayerList(playerList: PlayerData[]) {
+
+        this.playerList = playerList
+
+        if (!this.playerInfoContainer) {
+            this.playerInfoContainer = document.querySelector('#all_players_info_container')
+        }
+
+        this._createPlayerInfoDivForAll()
+
+    }
+
+    _updateGameTurnCounter() {
+        if (!this.turnCounterContainer) return;
+        this.turnCounterContainer.innerHTML = `Turn ${this.turn}`
+    }
+
+    _createPlayerInfoDivForAll() {
+        if (!this.playerInfoContainer) return;
+        this.playerList.forEach(player => {
+            this._createPlayerInfoDiv(player)
+        });
+
+    }
+
+    _createPlayerInfoDiv(playerData: PlayerData) {
+
+        if (!this.playerInfoContainer) return;
+
+        const playerInfoDiv = document.createElement('div');
+        playerInfoDiv.className = 'player_info_container'
+
+        const playerNameDiv = document.createElement('div');
+        playerNameDiv.className = 'player_info_name'
+        playerNameDiv.innerHTML = playerData.uuid;
+
+        const playerDataDiv = document.createElement('div');
+        playerDataDiv.className = 'player_info_data'
+        playerDataDiv.innerHTML = playerData.socketId
+
+        playerInfoDiv.appendChild(playerNameDiv)
+        playerInfoDiv.appendChild(playerDataDiv)
+
+        this.playerInfoContainer.appendChild(playerInfoDiv)
+    }
+}
+
 function main() {  /* eslint consistent-return: 0 */
     const canvas = document.querySelector('#c');
     if ((canvas as HTMLCanvasElement).transferControlToOffscreen) {
         startWorker(canvas);
     } else {
+        alert("UNSUPPORTED BROWSER")
         startMainPage(canvas);
     }
+
+    gameUIManager = new GameUIManager()
+    socketManager = new SocketManager('http://localhost:3000')
 }
 
 main();
-
-const socket = io('http://localhost:3000')
-
-socket.on('gameData', gameData => {
-    worker.postMessage({
-        type: 'gameData',
-        data: gameData
-    })
-})
 
 document.addEventListener('click', (e) => {
     e.preventDefault();
@@ -179,3 +269,8 @@ document.addEventListener('click', (e) => {
         type: 'raycastFromCamera'
     })
 })
+
+type PlayerData = {
+    uuid: string;
+    socketId: string;
+}
