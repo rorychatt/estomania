@@ -46,7 +46,7 @@ controls.update()
 const hexGeometry = new THREE.CylinderGeometry(5, 5, 1, 6); // Basic hexagon geometry
 const hexMaterial = new THREE.MeshBasicMaterial({ color: 0xCCCCCC, wireframe: true });
 
-function createHexagon(x, y, z) {
+function createHexagon(x: number, y: number, z: number) {
     const hex = new THREE.Mesh(hexGeometry, hexMaterial);
     hex.position.set(x, y, z);
     hex.rotation.y = Math.PI / 2; // Rotate to lay flat
