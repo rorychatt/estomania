@@ -2,6 +2,7 @@ import { Socket, io } from 'socket.io-client';
 import { init } from './game';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Game } from 'estomania-server/types/Game';
+import { Player } from 'estomania-server/types/Player';
 
 let worker: Worker, gameUIManager: GameUIManager, socketManager: SocketManager
 
@@ -182,7 +183,7 @@ class SocketManager {
 class GameUIManager {
 
     turn: number;
-    playerList: PlayerData[]
+    playerList: Player[]
 
     turnCounterContainer: HTMLElement;
     playerInfoContainer: HTMLElement;
@@ -201,7 +202,7 @@ class GameUIManager {
         this._updateGameTurnCounter()
     }
 
-    setPlayerList(playerList: PlayerData[]) {
+    setPlayerList(playerList: Player[]) {
 
         this.playerList = playerList
 
@@ -226,7 +227,7 @@ class GameUIManager {
 
     }
 
-    _createPlayerInfoDiv(playerData: PlayerData) {
+    _createPlayerInfoDiv(playerData: Player) {
 
         if (!this.playerInfoContainer) return;
 
@@ -269,8 +270,3 @@ document.addEventListener('click', (e) => {
         type: 'raycastFromCamera'
     })
 })
-
-type PlayerData = {
-    uuid: string;
-    socketId: string;
-}
