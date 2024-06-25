@@ -149,7 +149,7 @@ class ElementProxy {
   }
 }
 
-function startWorker(canvas: Element) {
+function startWorker(canvas: HTMLCanvasElement) {
   canvas.focus();
   const offscreen = canvas.transferControlToOffscreen();
   worker = new Worker(
@@ -279,8 +279,8 @@ class GameUIManager {
 
 function main() {
   /* eslint consistent-return: 0 */
-  const canvas = document.querySelector("#c");
-  if ((canvas as HTMLCanvasElement).transferControlToOffscreen) {
+  const canvas = document.querySelector("#c") as HTMLCanvasElement;
+  if (canvas.transferControlToOffscreen) {
     startWorker(canvas);
   } else {
     alert("UNSUPPORTED BROWSER");
