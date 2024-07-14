@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "./OrbitControls";
 import { HexGridMap } from "estomania-server/types/HexGridMap";
 import { Game } from "estomania-server/types/Game";
+import { Unit } from "estomania-server/types/Unit";
 
 export let gameScene: GameScene;
 
@@ -51,7 +52,23 @@ export class GameScene {
   loadGameSceneData(data: Game) {
     console.log(data);
     this.hexGridMap = data.hexGridMap;
+    data.currentPlayers.forEach((player) => {
+      player.units.forEach((unit) => {
+        this.createUnit(unit);
+      });
+    });
     this.createMap();
+  }
+
+  createUnit(unit: Unit) {
+    const unitGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const unitMaterial = new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      wireframe: false,
+    });
+    const unitMesh = new THREE.Mesh(unitGeometry, unitMaterial);
+    unitMesh.position.set(unit.position.x, 0, unit.position.z);
+    this.addObject(unitMesh);
   }
 
   createMap() {
