@@ -72,6 +72,7 @@ export class GameScene {
     const parentHexUUID = this.hexGridMap.grid[unit.position.x][unit.position.z].uuid;
     const parentHex = this.getObjectByUuid(parentHexUUID);
     unitMesh.position.copy(parentHex.position);
+    unitMesh.uuid = unit.uuid;
     this.addObject(unitMesh);
   }
 
@@ -107,6 +108,7 @@ export class GameScene {
             0,
             hex.position.z * Math.sqrt(3) + zOffsetPointy
           );
+          hexMesh.uuid = hex.uuid;
           this.addObject(hexMesh);
         }
       });
