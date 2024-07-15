@@ -13,7 +13,8 @@ export class GameScene {
   pickHelper: PickHelper;
   inputElement: Element;
   hexGridMap: HexGridMap;
-  objectHashMap: Map<string, THREE.Object3D<THREE.Object3DEventMap>> = new Map();
+  objectHashMap: Map<string, THREE.Object3D<THREE.Object3DEventMap>> =
+    new Map();
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -53,12 +54,12 @@ export class GameScene {
   loadGameSceneData(data: Game) {
     console.log(data);
     this.hexGridMap = data.hexGridMap;
+    this.createMap();
     data.currentPlayers.forEach((player) => {
       player.units.forEach((unit) => {
         this.createUnit(unit);
       });
     });
-    this.createMap();
   }
 
   createUnit(unit: Unit) {
@@ -69,7 +70,8 @@ export class GameScene {
     });
     const unitMesh = new THREE.Mesh(unitGeometry, unitMaterial);
     unitMesh.position.set(unit.position.x, 0, unit.position.z);
-    const parentHexUUID = this.hexGridMap.grid[unit.position.x][unit.position.z].uuid;
+    const parentHexUUID =
+      this.hexGridMap.grid[unit.position.x][unit.position.z].uuid;
     const parentHex = this.getObjectByUuid(parentHexUUID);
     unitMesh.position.copy(parentHex.position);
     unitMesh.uuid = unit.uuid;
@@ -117,20 +119,23 @@ export class GameScene {
 
   pickObject() {
     this.pickHelper.pick(this.scene, this.camera.cameraObject);
-    this.removeObject(this.pickHelper.pickedObject);
+
+    if (this.pickHelper.pickedObject) {
+      console.log(this.pickHelper.pickedObject.uuid);
+    }
   }
 
-addObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+  addObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
     this.objectHashMap.set(object.uuid, object);
     this.scene.add(object);
-}
-/**
- * @deprecated
- */
-removeObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+  }
+  /**
+   * @deprecated
+   */
+  removeObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
     this.objectHashMap.delete(object.uuid);
     this.scene.remove(object);
-}
+  }
   setupGlobalLights() {
     const color = 0xffffff;
     const intensity = 1;
