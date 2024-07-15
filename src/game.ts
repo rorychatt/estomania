@@ -13,6 +13,7 @@ export class GameScene {
   pickHelper: PickHelper;
   inputElement: Element;
   hexGridMap: HexGridMap;
+  objectHashMap: Map<string, THREE.Object3D<THREE.Object3DEventMap>> = new Map();
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -68,6 +69,9 @@ export class GameScene {
     });
     const unitMesh = new THREE.Mesh(unitGeometry, unitMaterial);
     unitMesh.position.set(unit.position.x, 0, unit.position.z);
+    const parentHexUUID = this.hexGridMap.grid[unit.position.x][unit.position.z].uuid;
+    const parentHex = this.getObjectByUuid(parentHexUUID);
+    unitMesh.position.copy(parentHex.position);
     this.addObject(unitMesh);
   }
 
@@ -114,14 +118,17 @@ export class GameScene {
     this.removeObject(this.pickHelper.pickedObject);
   }
 
-  addObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+addObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+    this.objectHashMap.set(object.uuid, object);
     this.scene.add(object);
-  }
-
-  removeObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+}
+/**
+ * @deprecated
+ */
+removeObject(object: THREE.Object3D<THREE.Object3DEventMap>) {
+    this.objectHashMap.delete(object.uuid);
     this.scene.remove(object);
-  }
-
+}
   setupGlobalLights() {
     const color = 0xffffff;
     const intensity = 1;
@@ -139,6 +146,18 @@ export class GameScene {
       this.renderer.setSize(width, height, false);
     }
     return needResize;
+  }
+
+  getObjectByUuid(uuid: string) {
+    return this.objectHashMap.get(uuid);
+  }
+
+  removeObjectByUuid(uuid: string) {
+    const object = this.objectHashMap.get(uuid);
+    if (object) {
+      this.scene.remove(object);
+      this.objectHashMap.delete(uuid);
+    }
   }
 }
 
