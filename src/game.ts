@@ -77,7 +77,7 @@ export class GameScene {
     unitMesh.uuid = unit.uuid;
 
     // TODO: Update name from the players name
-    this.createNameTag(unitMesh, unit., unitMesh.position);
+    this.createNameTag(unitMesh, unit.ownerName, unitMesh.position);
 
     this.addObject(unitMesh);
   }
