@@ -1,6 +1,6 @@
 {
   "name": "estomania",
-  "version": "1.0.6",
+  "version": "1.0.6-1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "estomania-server": "1.0.6",
+    "estomania-server": "1.0.6-2-quickfix",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "three": "^0.164.1"

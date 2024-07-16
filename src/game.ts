@@ -75,6 +75,10 @@ export class GameScene {
     const parentHex = this.getObjectByUuid(parentHexUUID);
     unitMesh.position.copy(parentHex.position);
     unitMesh.uuid = unit.uuid;
+
+    // TODO: Update name from the players name
+    this.createNameTag(unitMesh, unit., unitMesh.position);
+
     this.addObject(unitMesh);
   }
 
@@ -136,6 +140,27 @@ export class GameScene {
     this.objectHashMap.delete(object.uuid);
     this.scene.remove(object);
   }
+
+  createNameTag(parentObject: THREE.Object3D, text: string, position: THREE.Vector3) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return;
+  
+    context.font = 'Bold 20px Arial';
+    context.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    context.fillText(text, 0, 20);
+  
+    const texture = new THREE.CanvasTexture(canvas);
+  
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(spriteMaterial);
+  
+    sprite.scale.set(0.5, 0.25, 1);
+    sprite.position.set(position.x, position.y + 1, position.z);
+    parentObject.add(sprite);
+  }
+  
+
   setupGlobalLights() {
     const color = 0xffffff;
     const intensity = 1;
