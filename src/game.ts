@@ -173,6 +173,7 @@ export class GameScene {
 
         sprite.scale.set(0.5, 0.25, 1);
         sprite.position.set(position.x, position.y + 3, position.z);
+        console.log(parentObject);
         parentObject.add(sprite);
     }
 
