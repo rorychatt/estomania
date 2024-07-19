@@ -137,7 +137,7 @@ export class GameScene {
         if (this.pickHelper.pickedObject) {
             console.log(this.pickHelper.pickedObject);
         } else {
-          console.log(this.scene.children);
+            console.log(this.scene.children);
         }
     }
 
@@ -158,22 +158,35 @@ export class GameScene {
         text: string,
         position: THREE.Vector3
     ) {
-        const canvas = gameScene.renderer.domElement;
-        const context = canvas.getContext("2d");
+        let canvas: HTMLCanvasElement | OffscreenCanvas;
+        let context:
+            | OffscreenCanvasRenderingContext2D
+            | CanvasRenderingContext2D
+            | null;
+
+        if (typeof OffscreenCanvas !== "undefined") {
+            canvas = new OffscreenCanvas(256, 128);
+            context = canvas.getContext("2d");
+        } else {
+            canvas = document.createElement("canvas");
+            canvas.width = 256;
+            canvas.height = 128;
+            context = canvas.getContext("2d");
+        }
+
         if (!context) return;
 
         context.font = "Bold 20px Arial";
         context.fillStyle = "rgba(255, 255, 255, 0.95)";
-        context.fillText(text, 0, 20);
+        context.fillText(text, 10, 50);
 
         const texture = new THREE.CanvasTexture(canvas);
 
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
 
-        sprite.scale.set(0.5, 0.25, 1);
-        sprite.position.set(position.x, position.y + 3, position.z);
-        console.log(parentObject);
+        sprite.position.copy(position);
+
         parentObject.add(sprite);
     }
 
