@@ -49,17 +49,26 @@ canvas {
 }
 
 .ui-gameInfo{
-    width: 200px;
-    height: 200px;
     z-index: 3;
+    border: 1px solid var(--color-primary);
 }
 
 .ui-gameMap{
-    width: 200px;
-    height: 200px;
     z-index: 3;
+    border: 1px solid var(--color-primary);
 }
 
 .ui-turnInfo{
     z-index: 3;
+    border: 1px solid var(--color-primary);
+}
+
+.ui-yields{
+    display: flex;
+    flex-direction: row;
+}
+
+.ui-yields__resources{
+    display: flex;
+    flex-direction: row;
 }
