@@ -1,3 +1,7 @@
+:root{
+    --color-primary: #f1c40f;
+}
+
 body,
 html {
     margin: 0;
@@ -38,21 +42,26 @@ canvas {
 }
 
 .ui-players{
-    width: 200px;
-    height: 200px;
+    z-index: 3;
+    display: flex;
+    flex-direction: row-reverse;
+    border: 1px solid var(--color-primary);
 }
 
 .ui-gameInfo{
     width: 200px;
     height: 200px;
+    z-index: 3;
 }
 
 .ui-gameMap{
     width: 200px;
     height: 200px;
+    z-index: 3;
 }
 
 .ui-turnInfo{
     width: 200px;
     height: 200px;
+    z-index: 3;
 }
