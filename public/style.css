@@ -1,51 +1,74 @@
+:root{
+    --color-primary: #f1c40f;
+}
+
 body,
 html {
     margin: 0;
     padding: 0;
     overflow: hidden;
     height: 100%;
-    background: #000;
 }
 
 canvas {
     display: block;
     width: 100%;
     height: 100%;
+    z-index: 1;
 }
 
-.corner {
+.position-top-left {
     position: absolute;
-    min-width: 50px;
-    min-height: 50px;
-    background-color: rgba(255, 255, 255, 0.5);
-    /* semi-transparent white */
-    padding: 1px;
-}
-
-.top-left {
     top: 0;
     left: 0;
 }
 
-#all_players_info_container {
+.position-top-right {
+    position: absolute;
     top: 0;
     right: 0;
+}
+
+.position-bottom-left {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.position-bottom-right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.ui-players{
+    z-index: 3;
+    display: flex;
+    flex-direction: row-reverse;
+    border: 1px solid var(--color-primary);
+}
+
+.ui-gameInfo{
+    z-index: 3;
+    border: 1px solid var(--color-primary);
+}
+
+.ui-gameMap{
+    z-index: 3;
+    border: 1px solid var(--color-primary);
+}
+
+.ui-turnInfo{
+    z-index: 3;
+    border: 1px solid var(--color-primary);
+}
+
+.ui-yields{
     display: flex;
     flex-direction: row;
 }
 
-.bottom-left {
-    bottom: 0;
-    left: 0;
-}
-
-#turn_counter_container {
-    bottom: 0;
-    right: 0;
-}
-
-.player_info_container {
-    max-width: 120px;
-    margin: 1px;
-    border: solid black 1px;
+.ui-yields__resources{
+    display: flex;
+    flex-direction: row;
 }

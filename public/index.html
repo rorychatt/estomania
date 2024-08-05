@@ -8,12 +8,75 @@
 </head>
 <body>
 
-    <script src="../dist/bundle.js"></script>
+    <script src="/bundle.js"></script>
     <canvas id="c" tabindex="1"></canvas>
-    <div class="corner top-left"></div>
-    <div id="all_players_info_container" class="corner"></div>
-    <div class="corner bottom-left"></div>
-    <div id="turn_counter_container" class="corner"></div>
-
+    <main>
+        <section class="position-top-right ui-players">
+            <article class="ui-playerStats">
+                <header>
+                    <p class="ui-playerStats__playerName">Player 1</p>
+                </header>
+                <section class="ui-playerStats__playerResources">
+                    <p class="ui-playerStats__playerResources__gold">Gold: 100</p>
+                    <p class="ui-playerStats__playerResources__food">Food: 100</p>
+                    <p class="ui-playerStats__playerResources__wood">Wood: 100</p>
+                    <p class="ui-playerStats__playerResources__stone">Stone: 100</p>
+                </section>
+            </article>
+            <article class="ui-playerStats">
+                <header>
+                    <p class="ui-playerStats__playerName">Player 2</p>
+                </header>
+                <section class="ui-playerStats__playerResources">
+                    <p class="ui-playerStats__playerResources__gold">Gold: 100</p>
+                    <p class="ui-playerStats__playerResources__food">Food: 100</p>
+                    <p class="ui-playerStats__playerResources__wood">Wood: 100</p>
+                    <p class="ui-playerStats__playerResources__stone">Stone: 100</p>
+                </section>
+            </article>
+            <article class="ui-playerStats">
+                <header>
+                    <p class="ui-playerStats__playerName">Player 3</p>
+                </header>
+                <section class="ui-playerStats__playerResources">
+                    <p class="ui-playerStats__playerResources__gold">Gold: 100</p>
+                    <p class="ui-playerStats__playerResources__food">Food: 100</p>
+                    <p class="ui-playerStats__playerResources__wood">Wood: 100</p>
+                    <p class="ui-playerStats__playerResources__stone">Stone: 100</p>
+                </section>
+            </article>
+        </section>
+        <section class="position-bottom-right ui-turnInfo">
+            <article class="ui-turns">
+                <header>
+                    <p class="ui-turnsCounter__title">Turn:</p>
+                    <p class="ui-turnsCounter__value">1</p>
+                </header>
+            </article>
+        </section>
+        <section class="position-bottom-left ui-gameMap">
+            <article class="ui-map">
+                <header>
+                    <p class="ui-map__title">Map</p>
+                </header>
+                <section class="ui-map__canvas">
+                    <canvas id="ui-map__map" width="160" height="90"></canvas>
+                </section>
+            </article>
+        </section>
+        <section class="position-top-left ui-gameInfo">
+            <article class="ui-yields">
+                <header>
+                    <p class="ui-yields__title">Yields:</p>
+                </header>
+                <section class="ui-yields__resources">
+                    <p class="ui-yields__resources__goldPerTurn">Gold: 100</p>
+                    <p class="ui-yields__resources__foodPerTurn">Food: 100</p>
+                    <p class="ui-yields__resources__woodPerTurn">Wood: 100</p>
+                    <p class="ui-yields__resources__stonePerTurn">Stone: 100</p>
+                </section>
+            </article>
+        </section>
+    </main>
 </body>
 </html>

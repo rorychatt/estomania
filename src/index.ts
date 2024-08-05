@@ -220,6 +220,9 @@ class GameUIManager {
     this.turn = 0;
   }
 
+  /**
+   * @deprecated This method is deprecated and will be removed in future versions.
+   */
   updateGameTurn(turnNo: number) {
     this.turn = turnNo;
 
@@ -228,10 +231,12 @@ class GameUIManager {
         "#turn_counter_container"
       );
     }
-
     this._updateGameTurnCounter();
   }
 
+  /**
+   * @deprecated This method is deprecated and will be removed in future versions.
+   */
   setPlayerList(playerList: Player[]) {
     this.playerList = playerList;
 
@@ -244,11 +249,17 @@ class GameUIManager {
     this._createPlayerInfoDivForAll();
   }
 
+  /**
+   * @deprecated This method is deprecated and will be removed in future versions.
+   */
   _updateGameTurnCounter() {
     if (!this.turnCounterContainer) return;
     this.turnCounterContainer.innerHTML = `Turn ${this.turn}`;
   }
 
+  /**
+   * @deprecated This method is deprecated and will be removed in future versions.
+   */
   _createPlayerInfoDivForAll() {
     if (!this.playerInfoContainer) return;
     this.playerList.forEach((player) => {
@@ -256,6 +267,9 @@ class GameUIManager {
     });
   }
 
+  /**
+   * @deprecated This method is deprecated and will be removed in future versions.
+   */
   _createPlayerInfoDiv(playerData: Player) {
     if (!this.playerInfoContainer) return;
 
@@ -276,7 +290,6 @@ class GameUIManager {
     this.playerInfoContainer.appendChild(playerInfoDiv);
   }
 }
-
 function main() {
   /* eslint consistent-return: 0 */
   const canvas = document.querySelector("#c") as HTMLCanvasElement;
@@ -299,3 +312,4 @@ document.addEventListener("click", (e) => {
     type: "raycastFromCamera",
   });
 });
+ 
