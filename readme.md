@@ -1,5 +1,7 @@
 civ 7 client in browser??
 
+# UPD: Cancelled as CIV 7 got released
+
 # Building
 
 - Install all dependencies
